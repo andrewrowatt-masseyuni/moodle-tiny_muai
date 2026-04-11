@@ -8,7 +8,7 @@
     Context variables required for this template:
     * defaultpromptcontext - string|null site-wide default context text
     * course - object|null with fullname, shortname, summary, category, category_description
-    * module - object|null with type, name, section, restrictions
+    * module - object|null with type, name, section, section_summary, restrictions
 }}
 {{#defaultpromptcontext}}
 # Top-level context
@@ -32,9 +32,10 @@ The course is called "{{{fullname}}}".
 ## Module details
 The text to critique is for a Moodle "{{{type}}}" activity called "{{{name}}}".
 {{#section}}It is in the section name "{{{.}}}".
-{{#section_description}}The section summary is:
-{{/section_description}}
 {{/section}}
+{{#section_summary}}The section summary is:
+{{{.}}}
+{{/section_summary}}
 {{#restrictions}}Access restrictions (raw availability JSON): {{{.}}}
 {{/restrictions}}
 {{/module}}

@@ -81,6 +81,7 @@ class utils {
             $tokens['{module_type}'] = $moduledetails['type'];
             $tokens['{module_name}'] = $moduledetails['name'];
             $tokens['{module_section}'] = $moduledetails['section'];
+            $tokens['{module_section_summary}'] = $moduledetails['section_summary'];
             $tokens['{module_restrictions}'] = $moduledetails['restrictions'];
         }
 
@@ -126,9 +127,9 @@ class utils {
                 . "editorcontext: {$editorcontext}\n"
                 . "name: {$name}\n"
                 . "prompttext: {$prompttext}\n";
-            foreach ($tokens as $token => $value) {
+/*             foreach ($tokens as $token => $value) {
                 $debug .= "{$token}: {$value}\n";
-            }
+            } */
             $generated = $debug . "\n" . $generated;
         }
 
@@ -184,26 +185,36 @@ class utils {
     }
 
     /**
-     * Return the module type, name, section name, and any restrict-access conditions.
+     * Return the module type, name, section name and summary, and any restrict-access conditions.
      *
      * Restrictions are returned as the raw availability JSON string (empty if none are set).
+     * The section summary is returned as a plain-text string (empty if none is set).
      *
      * @param int $cmid Course module id.
-     * @return array{type: string, name: string, section: string, restrictions: string}
+     * @return array{type: string, name: string, section: string, section_summary: string, restrictions: string}
      */
     public static function get_module_details(int $cmid): array {
         [$course, $cm] = get_course_and_cm_from_cmid($cmid);
 
         $sectionname = '';
+        $sectionsummary = '';
         $section = $cm->get_section_info();
         if ($section) {
             $sectionname = get_section_name($course, $section);
+            if (!empty($section->summary)) {
+                $sectionsummary = trim(format_text(
+                    $section->summary,
+                    $section->summaryformat,
+                    ['context' => \core\context\course::instance($course->id), 'noclean' => true]
+                ));
+            }
         }
 
         return [
             'type' => $cm->modname,
             'name' => format_string($cm->name),
             'section' => $sectionname,
+            'section_summary' => $sectionsummary,
             'restrictions' => (string) ($cm->availability ?? ''),
         ];
     }
