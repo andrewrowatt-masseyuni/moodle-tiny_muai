@@ -1,0 +1,48 @@
+{{!
+    @template tiny_muai/prompt_context
+
+    Context block prepended to the critique prompt. Either or both of the
+    "course" and "module" sections may be missing (e.g. when the editor is
+    not in a course/module context).
+
+    Context variables required for this template:
+    * course - object|null with fullname, shortname, summary, category, category_description
+    * module - object|null with type, name, section, restrictions
+}}
+{{#course}}
+# Course details
+The course is called "{{{fullname}}}".
+{{#summary}}It has the course summary:
+{{{.}}}
+{{/summary}}
+{{#category}}The course is in the top-level category "{{{.}}}".
+{{#category_description}}The top-level category has the description:
+{{{.}}}
+{{/category_description}}
+{{/category}}
+{{/course}}
+{{#module}}
+
+# Module details
+The text to critique is for a Moodle "{{{type}}}" activity called "{{{name}}}".
+{{#section}}It is in the section name "{{{.}}}".
+{{#section_description}}The section summary is:
+{{/section_description}}
+{{/section}}
+{{#restrictions}}Access restrictions (raw availability JSON): {{{.}}}
+{{/restrictions}}
+{{/module}}
+{{#additionalcontext}}
+
+## Additional module context
+{{{additionalcontext}}}
+{{/additionalcontext}}
+{{#extraprompt}}
+
+## Extra prompt refinements
+{{{extraprompt}}}
+{{/extraprompt}}
+
+# Prompt
+Please critique the following text:
+{{{editorcontent}}}
