@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component    = 'tiny_muai';
 $plugin->release      = '1.0';
-$plugin->version      = 2026041200;
+$plugin->version      = 2026041201;
 $plugin->requires     = 2024100700;
 $plugin->supported    = [405, 405];
 $plugin->maturity     = MATURITY_STABLE;

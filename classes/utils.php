@@ -90,7 +90,10 @@ class utils {
 
         $additional = self::get_additional_context($contextid, $page, $editorcontext);
 
+        $defaultpromptcontext = trim((string) get_config('tiny_muai', 'defaultpromptcontext'));
+
         $prompttext = $OUTPUT->render_from_template('tiny_muai/prompt_context', [
+            'defaultpromptcontext' => $defaultpromptcontext !== '' ? $defaultpromptcontext : null,
             'course' => $coursedetails,
             'module' => $moduledetails,
             'extraprompt' => $extraprompt,

@@ -26,6 +26,16 @@ defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtextarea(
+        'tiny_muai/defaultpromptcontext',
+        new lang_string('defaultpromptcontext', 'tiny_muai'),
+        new lang_string('defaultpromptcontext_desc', 'tiny_muai'),
+        '',
+        PARAM_RAW,
+        60,
+        10,
+    ));
+
+    $settings->add(new admin_setting_configtextarea(
         'tiny_muai/prompts',
         new lang_string('prompts', 'tiny_muai'),
         new lang_string('prompts_desc', 'tiny_muai'),
