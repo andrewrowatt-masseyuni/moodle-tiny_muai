@@ -1,0 +1,39 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tiny_muai/panel
+
+    Floating panel rendered by the tiny_muai editor plugin to display an AI
+    critique response alongside (and independent of) the TinyMCE editor.
+
+    The shell is rendered via this template; the body (data-region="muai-body")
+    is populated imperatively by commands.js with either a loading spinner
+    or the response text. Styling lives in tiny_muai/styles.css.
+
+    Context variables required for this template:
+    * title - localised panel title
+    * refreshtitle - localised refresh button tooltip / aria-label
+    * closetitle - localised close button tooltip / aria-label
+}}
+<div class="tiny-muai-panel" role="dialog" aria-label="{{title}}" data-region="muai-panel">
+    <div class="tiny-muai-panel-header" data-region="muai-drag-handle">
+        <span class="tiny-muai-panel-title">{{title}}</span>
+        <button type="button" class="tiny-muai-panel-btn" data-action="muai-refresh" title="{{refreshtitle}}" aria-label="{{refreshtitle}}">&#x21bb;</button>
+        <button type="button" class="tiny-muai-panel-btn" data-action="muai-close" title="{{closetitle}}" aria-label="{{closetitle}}">&#x00d7;</button>
+    </div>
+    <div class="tiny-muai-panel-body" data-region="muai-body"></div>
+</div>

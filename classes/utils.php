@@ -125,12 +125,12 @@ class utils {
             $debug = "contextid: {$contextid}\n"
                 . "page: {$page}\n"
                 . "editorcontext: {$editorcontext}\n"
-                . "name: {$name}\n"
-                . "prompttext: {$prompttext}\n";
+                . "name: {$name}\n\n"
+                . "prompttext:\n{$prompttext}\n";
 /*             foreach ($tokens as $token => $value) {
                 $debug .= "{$token}: {$value}\n";
             } */
-            $generated = $debug . "\n" . $generated;
+            $generated = $debug . "\nResponse:\n" . $generated;
         }
 
         return $generated;
