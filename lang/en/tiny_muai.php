@@ -26,6 +26,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['buttontitle'] = 'Critique text';
+$string['checkrevised'] = 'Check revised';
+$string['checkrevisedtitle'] = 'Check the revised text against the original critique';
 $string['cannotgenerate'] = 'The AI service was unable to generate a response.';
 $string['critiqueheading'] = 'Critique';
 $string['panelclose'] = 'Close';

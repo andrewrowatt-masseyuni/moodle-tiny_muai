@@ -62,6 +62,12 @@ class get_ai_response extends external_api {
                 VALUE_DEFAULT,
                 '',
             ),
+            'previousresponse' => new external_value(
+                PARAM_RAW,
+                'The previous AI critique response, used when checking revised text',
+                VALUE_DEFAULT,
+                '',
+            ),
         ]);
     }
 
@@ -80,6 +86,7 @@ class get_ai_response extends external_api {
         string $editorcontext,
         string $editorcontent,
         string $name = '',
+        string $previousresponse = '',
     ): string {
         [
             'contextid' => $contextid,
@@ -87,12 +94,14 @@ class get_ai_response extends external_api {
             'editorcontext' => $editorcontext,
             'editorcontent' => $editorcontent,
             'name' => $name,
+            'previousresponse' => $previousresponse,
         ] = self::validate_parameters(self::execute_parameters(), [
             'contextid' => $contextid,
             'page' => $page,
             'editorcontext' => $editorcontext,
             'editorcontent' => $editorcontent,
             'name' => $name,
+            'previousresponse' => $previousresponse,
         ]);
 
         $context = \core\context::instance_by_id($contextid);
@@ -106,7 +115,7 @@ class get_ai_response extends external_api {
             throw new \moodle_exception('noeditor', 'aiplacement_editor');
         }
 
-        return utils::generate_ai_response($contextid, $page, $editorcontext, $editorcontent, $name);
+        return utils::generate_ai_response($contextid, $page, $editorcontext, $editorcontent, $name, $previousresponse);
     }
 
     /**
