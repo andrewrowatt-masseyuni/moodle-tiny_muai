@@ -74,6 +74,17 @@ The section that the module is in also contains the following labels and books:
 {{/section_content}}
 {{/module}}
 
+{{#previousresponse}}
+# Original critique
+You previously provided the following critique:
+{{{previousresponse}}}
+
+# Prompt
+The user has revised the text based on your critique. Please critique the revised version, noting what has improved and what still needs attention:
+{{{editorcontent}}}
+{{/previousresponse}}
+{{^previousresponse}}
 # Prompt
 Please critique the following text:
 {{{editorcontent}}}
+{{/previousresponse}}

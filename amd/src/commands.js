@@ -70,16 +70,20 @@ const makeDraggable = (panel, handle) => {
 };
 
 const buildPanel = async(editor) => {
-    const [titleText, refreshText, closeText] = await Promise.all([
+    const [titleText, refreshText, closeText, checkRevisedText, checkRevisedTitleText] = await Promise.all([
         getString('critiqueheading', component),
         getString('panelrefresh', component),
         getString('panelclose', component),
+        getString('checkrevised', component),
+        getString('checkrevisedtitle', component),
     ]);
 
     const {html} = await Templates.renderForPromise('tiny_muai/panel', {
         title: titleText,
         refreshtitle: refreshText,
         closetitle: closeText,
+        checkrevised: checkRevisedText,
+        checkrevisedtitle: checkRevisedTitleText,
     });
 
     const wrapper = document.createElement('div');
@@ -90,17 +94,31 @@ const buildPanel = async(editor) => {
     const body = panel.querySelector('[data-region="muai-body"]');
     const refreshBtn = panel.querySelector('[data-action="muai-refresh"]');
     const closeBtn = panel.querySelector('[data-action="muai-close"]');
+    const checkRevisedBtn = panel.querySelector('[data-action="muai-checkrevised"]');
 
     makeDraggable(panel, handle);
 
     const state = {
         panel,
         body,
+        checkRevisedBtn,
         hasContent: false,
         loading: false,
+        originalContent: null,
+        lastCritique: null,
     };
 
+    // Listen for editor content changes to enable/disable "Check revised".
+    editor.on('input NodeChange', () => {
+        if (state.lastCritique === null || state.loading) {
+            return;
+        }
+        const current = editor.getContent({format: 'text'}).trim();
+        checkRevisedBtn.disabled = (current === state.originalContent);
+    });
+
     refreshBtn.addEventListener('click', () => fetchIntoState(editor, state));
+    checkRevisedBtn.addEventListener('click', () => fetchReviseIntoState(editor, state));
     closeBtn.addEventListener('click', () => {
         panel.style.display = 'none';
     });
@@ -155,6 +173,54 @@ const fetchIntoState = async(editor, state) => {
 
         state.body.textContent = response;
         state.hasContent = true;
+        state.originalContent = editorContent;
+        state.lastCritique = response;
+        if (state.checkRevisedBtn) {
+            state.checkRevisedBtn.disabled = true;
+        }
+    } catch (error) {
+        state.body.textContent = '';
+        state.hasContent = false;
+        Notification.exception(error);
+    } finally {
+        state.loading = false;
+    }
+};
+
+const fetchReviseIntoState = async(editor, state) => {
+    const editorContent = editor.getContent({format: 'text'}).trim();
+    if (editorContent === '') {
+        Notification.alert(
+            await getString('buttontitle', component),
+            await getString('emptycontent', component),
+        );
+        return;
+    }
+
+    if (state.loading) {
+        return;
+    }
+    state.loading = true;
+    state.checkRevisedBtn.disabled = true;
+    await setProcessing(state);
+
+    try {
+        const response = await Ajax.call([{
+            methodname: 'tiny_muai_get_ai_response',
+            args: {
+                contextid: getContextId(editor),
+                page: document.body?.id ?? '',
+                editorcontext: editor.id ?? '',
+                editorcontent: editorContent,
+                name: document.getElementById('id_name')?.value ?? '',
+                previousresponse: state.lastCritique ?? '',
+            },
+        }])[0];
+
+        state.body.textContent = response;
+        state.hasContent = true;
+        state.originalContent = editorContent;
+        state.lastCritique = response;
     } catch (error) {
         state.body.textContent = '';
         state.hasContent = false;

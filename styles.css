@@ -80,3 +80,34 @@
         transform: rotate(360deg);
     }
 }
+
+.tiny-muai-panel-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.tiny-muai-panel-checkrevised-btn {
+    background: #0d6efd;
+    color: #fff;
+    border: 1px solid #0d6efd;
+    border-radius: 4px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.tiny-muai-panel-checkrevised-btn:hover:not(:disabled) {
+    background: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.tiny-muai-panel-checkrevised-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

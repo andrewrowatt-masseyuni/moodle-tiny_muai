@@ -43,6 +43,7 @@ class utils {
         string $editorcontext,
         string $editorcontent,
         string $name,
+        string $previousresponse = '',
     ): string {
         global $USER, $OUTPUT;
 
@@ -100,6 +101,7 @@ class utils {
             'extraprompt' => $extraprompt,
             'additional' => $additional,
             'editorcontent' => $editorcontent,
+            'previousresponse' => $previousresponse !== '' ? $previousresponse : null,
         ]);
 
         $action = new \core_ai\aiactions\generate_text(
