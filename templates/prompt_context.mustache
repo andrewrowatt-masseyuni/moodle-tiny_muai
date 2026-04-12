@@ -24,7 +24,7 @@
     Context variables required for this template:
     * defaultpromptcontext - string|null site-wide default context text
     * course - object|null with fullname, shortname, summary, category, category_description
-    * module - object|null with type, name, section, section_summary, restrictions
+    * module - object|null with type, name, section, section_summary, section_content, restrictions
 }}
 {{#defaultpromptcontext}}
 # Top-level context
@@ -52,6 +52,12 @@ The text to critique is for a Moodle "{{{type}}}" activity called "{{{name}}}".
 {{#section_summary}}The section summary is:
 {{{.}}}
 {{/section_summary}}
+{{#section_content}}
+
+### Section content
+The section also contains the following labels and book chapters:
+{{{.}}}
+{{/section_content}}
 {{#restrictions}}Access restrictions (raw availability JSON): {{{.}}}
 {{/restrictions}}
 {{/module}}

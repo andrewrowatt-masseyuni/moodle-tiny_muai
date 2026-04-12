@@ -185,19 +185,27 @@ class utils {
     }
 
     /**
-     * Return the module type, name, section name and summary, and any restrict-access conditions.
+     * Return the module type, name, section name, summary, and content, plus any restrict-access conditions.
      *
      * Restrictions are returned as the raw availability JSON string (empty if none are set).
-     * The section summary is returned as a plain-text string (empty if none is set).
+     * The section summary and section content are returned as plain-text strings (empty if none is set).
      *
      * @param int $cmid Course module id.
-     * @return array{type: string, name: string, section: string, section_summary: string, restrictions: string}
+     * @return array{
+     *     type: string,
+     *     name: string,
+     *     section: string,
+     *     section_summary: string,
+     *     section_content: string,
+     *     restrictions: string,
+     * }
      */
     public static function get_module_details(int $cmid): array {
         [$course, $cm] = get_course_and_cm_from_cmid($cmid);
 
         $sectionname = '';
         $sectionsummary = '';
+        $sectioncontent = '';
         $section = $cm->get_section_info();
         if ($section) {
             $sectionname = get_section_name($course, $section);
@@ -208,6 +216,7 @@ class utils {
                     ['context' => \core\context\course::instance($course->id), 'noclean' => true]
                 ));
             }
+            $sectioncontent = self::get_section_content($course->id, $section->id);
         }
 
         return [
@@ -215,8 +224,87 @@ class utils {
             'name' => format_string($cm->name),
             'section' => $sectionname,
             'section_summary' => $sectionsummary,
+            'section_content' => $sectioncontent,
             'restrictions' => (string) ($cm->availability ?? ''),
         ];
+    }
+
+    /**
+     * Return a plain-text/markdown-ish rendering of the label and book modules in a course section.
+     *
+     * Labels contribute their intro text. Books contribute each non-hidden chapter as a heading plus
+     * the chapter body. HTML is collapsed to plain text via format_text + html_to_text so the result
+     * can be dropped directly into an AI prompt.
+     *
+     * @param int $courseid
+     * @param int $sectionid The id of the course_sections row (not the section number).
+     * @return string Empty string if the section has no label/book content.
+     */
+    public static function get_section_content(int $courseid, int $sectionid): string {
+        global $DB;
+
+        $modinfo = get_fast_modinfo($courseid);
+        $section = $modinfo->get_section_info_by_id($sectionid, IGNORE_MISSING);
+        if (!$section || empty($section->sequence)) {
+            return '';
+        }
+
+        $blocks = [];
+        foreach (explode(',', $section->sequence) as $cmid) {
+            $cmid = (int) trim($cmid);
+            if ($cmid === 0) {
+                continue;
+            }
+            try {
+                $cm = $modinfo->get_cm($cmid);
+            } catch (\moodle_exception $e) {
+                continue;
+            }
+            if ($cm->deletioninprogress) {
+                continue;
+            }
+
+            if ($cm->modname === 'label') {
+                $label = $DB->get_record('label', ['id' => $cm->instance], 'intro, introformat');
+                if (!$label || trim((string) $label->intro) === '') {
+                    continue;
+                }
+                $html = format_text($label->intro, $label->introformat, [
+                    'context' => $cm->context,
+                    'noclean' => true,
+                ]);
+                $text = trim(html_to_text($html, 0, false));
+                if ($text !== '') {
+                    $blocks[] = $text;
+                }
+            } else if ($cm->modname === 'book') {
+                $chapters = $DB->get_records(
+                    'book_chapters',
+                    ['bookid' => $cm->instance, 'hidden' => 0],
+                    'pagenum ASC, id ASC',
+                    'id, title, content, contentformat, subchapter'
+                );
+                if (empty($chapters)) {
+                    continue;
+                }
+                $parts = ['## ' . format_string($cm->name)];
+                foreach ($chapters as $chapter) {
+                    $prefix = !empty($chapter->subchapter) ? '####' : '###';
+                    $parts[] = $prefix . ' ' . format_string($chapter->title);
+                    $html = format_text($chapter->content, $chapter->contentformat, [
+                        'context' => $cm->context,
+                        'noclean' => true,
+                    ]);
+                    $text = trim(html_to_text($html, 0, false));
+                    if ($text !== '') {
+                        $parts[] = $text;
+                    }
+                }
+                $blocks[] = implode("\n\n", $parts);
+            }
+        }
+
+        return implode("\n\n", $blocks);
     }
 
     /**
