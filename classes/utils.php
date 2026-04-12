@@ -287,9 +287,9 @@ class utils {
                 if (empty($chapters)) {
                     continue;
                 }
-                $parts = ['## ' . format_string($cm->name)];
+                $parts = ['### ' . format_string($cm->name)];
                 foreach ($chapters as $chapter) {
-                    $prefix = !empty($chapter->subchapter) ? '####' : '###';
+                    $prefix = !empty($chapter->subchapter) ? '#####' : '####';
                     $parts[] = $prefix . ' ' . format_string($chapter->title);
                     $html = format_text($chapter->content, $chapter->contentformat, [
                         'context' => $cm->context,

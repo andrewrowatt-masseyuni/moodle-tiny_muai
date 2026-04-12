@@ -32,7 +32,7 @@
 
 {{/defaultpromptcontext}}
 {{#course}}
-## Course details
+# Course details
 The course is called "{{{fullname}}}".
 {{#summary}}It has the course summary:
 {{{.}}}
@@ -45,32 +45,34 @@ The course is called "{{{fullname}}}".
 {{/course}}
 {{#module}}
 
-## Module details
+# Module details
 The text to critique is for a Moodle "{{{type}}}" activity called "{{{name}}}".
-{{#section}}It is in the section name "{{{.}}}".
+{{#section}}It is in the section named "{{{.}}}".
 {{/section}}
 {{#section_summary}}The section summary is:
 {{{.}}}
 {{/section_summary}}
-{{#section_content}}
-
-### Section content
-The section also contains the following labels and book chapters:
-{{{.}}}
-{{/section_content}}
-{{#restrictions}}Access restrictions (raw availability JSON): {{{.}}}
-{{/restrictions}}
-{{/module}}
 {{#additionalcontext}}
 
-### Additional module context
+## Additional module context
 {{{additionalcontext}}}
 {{/additionalcontext}}
 {{#extraprompt}}
 
-### Extra prompt refinements
+## Extra prompt refinements
 {{{extraprompt}}}
 {{/extraprompt}}
+
+{{#restrictions}}### Module access restrictions (raw availability JSON): {{{.}}}
+{{/restrictions}}
+
+{{#section_content}}
+
+## Section content
+The section that the module is in also contains the following labels and books:
+{{{.}}}
+{{/section_content}}
+{{/module}}
 
 # Prompt
 Please critique the following text:
