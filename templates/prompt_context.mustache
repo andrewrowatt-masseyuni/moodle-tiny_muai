@@ -17,12 +17,13 @@
 {{!
     @template tiny_muai/prompt_context
 
-    Context block prepended to the critique prompt. Either or both of the
+    Context block prepended to the review prompt. Either or both of the
     "course" and "module" sections may be missing (e.g. when the editor is
     not in a course/module context).
 
     Context variables required for this template:
     * defaultpromptcontext - string|null site-wide default context text
+    * defaultprompt - string the default review prompt text
     * course - object|null with fullname, shortname, summary, category, category_description
     * module - object|null with type, name, section, section_summary, section_content, restrictions
 }}
@@ -46,7 +47,7 @@ The course is called "{{{fullname}}}".
 {{#module}}
 
 # Module details
-The text to critique is for a Moodle "{{{type}}}" activity called "{{{name}}}".
+The text to review is for a Moodle "{{{type}}}" activity called "{{{name}}}".
 {{#section}}It is in the section named "{{{.}}}".
 {{/section}}
 {{#section_summary}}The section summary is:
@@ -75,16 +76,18 @@ The section that the module is in also contains the following labels and books:
 {{/module}}
 
 {{#previousresponse}}
-# Original critique
-You previously provided the following critique:
+# Original review
+You previously provided the following review:
 {{{previousresponse}}}
 
 # Prompt
-The user has revised the text based on your critique. Please critique the revised version, noting what has improved and what still needs attention:
+The user has revised the text based on your review. Please review the revised version, noting what has improved and what still needs attention:
 {{{editorcontent}}}
 {{/previousresponse}}
 {{^previousresponse}}
 # Prompt
-Please critique the following text:
+{{{defaultprompt}}}
+
+Text to review:
 {{{editorcontent}}}
 {{/previousresponse}}

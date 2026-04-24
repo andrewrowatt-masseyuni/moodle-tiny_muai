@@ -93,9 +93,19 @@ class utils {
         $additional = self::get_additional_context($contextid, $page, $editorcontext);
 
         $defaultpromptcontext = trim((string) get_config('tiny_muai', 'defaultpromptcontext'));
+        $defaultprompt = get_config('tiny_muai', 'defaultprompt');
+        if ($defaultprompt === false || trim((string) $defaultprompt) === '') {
+            $defaultprompt = "Please review the following text and provide feedback to:\n"
+                . "1. Correct any grammatical errors and typos.\n"
+                . "2. Improve word choice and sentence structure to make the text more concise "
+                . "and easy to read for university-level students.\n"
+                . "3. Highlight any ambiguity in relation to the surrounding context provided above.";
+        }
+        $defaultprompt = trim((string) $defaultprompt);
 
         $prompttext = $OUTPUT->render_from_template('tiny_muai/prompt_context', [
             'defaultpromptcontext' => $defaultpromptcontext !== '' ? $defaultpromptcontext : null,
+            'defaultprompt' => $defaultprompt,
             'course' => $coursedetails,
             'module' => $moduledetails,
             'extraprompt' => $extraprompt,
@@ -316,7 +326,7 @@ class utils {
      *   page|editor_context|prompt
      * where "page" matches the id of the body tag, "editor_context" matches
      * the id of the textarea replaced by TinyMCE, and "prompt" is the extra
-     * context to prepend to the critique prompt.
+     * context to prepend to the review prompt.
      *
      * @return array<int, array{page: string, editorcontext: string, prompt: string}>
      */

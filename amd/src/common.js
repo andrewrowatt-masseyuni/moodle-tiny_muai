@@ -24,4 +24,4 @@
 export const component = 'tiny_muai';
 export const pluginName = `${component}/plugin`;
 export const icon = 'tiny_muai';
-export const buttonName = `${component}_critique`;
+export const buttonName = `${component}_review`;

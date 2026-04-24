@@ -64,7 +64,7 @@ class get_ai_response extends external_api {
             ),
             'previousresponse' => new external_value(
                 PARAM_RAW,
-                'The previous AI critique response, used when checking revised text',
+                'The previous AI review response, used when checking revised text',
                 VALUE_DEFAULT,
                 '',
             ),

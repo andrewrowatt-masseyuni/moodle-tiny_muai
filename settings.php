@@ -36,6 +36,19 @@ if ($ADMIN->fulltree) {
     ));
 
     $settings->add(new admin_setting_configtextarea(
+        'tiny_muai/defaultprompt',
+        new lang_string('defaultprompt', 'tiny_muai'),
+        new lang_string('defaultprompt_desc', 'tiny_muai'),
+        "Please review the following text and provide feedback to:\n"
+            . "1. Correct any grammatical errors and typos.\n"
+            . "2. Improve word choice and sentence structure to make the text more concise and easy to read for university-level students.\n"
+            . "3. Highlight any ambiguity in relation to the surrounding context provided above.",
+        PARAM_RAW,
+        60,
+        10,
+    ));
+
+    $settings->add(new admin_setting_configtextarea(
         'tiny_muai/prompts',
         new lang_string('prompts', 'tiny_muai'),
         new lang_string('prompts_desc', 'tiny_muai'),

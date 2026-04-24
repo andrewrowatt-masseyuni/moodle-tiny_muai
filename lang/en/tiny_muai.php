@@ -25,20 +25,22 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['buttontitle'] = 'Critique text';
+$string['buttontitle'] = 'Review text';
 $string['checkrevised'] = 'Check revised';
-$string['checkrevisedtitle'] = 'Check the revised text against the original critique';
+$string['checkrevisedtitle'] = 'Check the revised text against the original review';
 $string['cannotgenerate'] = 'The AI service was unable to generate a response.';
-$string['critiqueheading'] = 'Critique';
+$string['reviewheading'] = 'Review';
 $string['panelclose'] = 'Close';
 $string['panelprocessing'] = 'Processing…';
 $string['panelrefresh'] = 'Refresh with current editor content';
 $string['debugging'] = 'Debugging enabled';
 $string['debugging_desc'] = 'When enabled, responses returned to site administrators are prefixed with the contextid, page id, and editor textarea id that were sent to the AI service.';
+$string['defaultprompt'] = 'Default prompt';
+$string['defaultprompt_desc'] = 'The default review prompt sent to the AI when no previous response exists. This text is appended after any context (course, module, etc.) and before the editor content.';
 $string['defaultpromptcontext'] = 'Default prompt context';
-$string['defaultpromptcontext_desc'] = 'Standard context prepended to every critique prompt, before any course, module, or page/editor-specific context. Leave blank to include nothing by default.';
-$string['emptycontent'] = 'There is no text in the editor to critique.';
+$string['defaultpromptcontext_desc'] = 'Standard context prepended to every review prompt, before any course, module, or page/editor-specific context. Leave blank to include nothing by default.';
+$string['emptycontent'] = 'There is no text in the editor to review.';
 $string['pluginname'] = 'Massey University artificial intelligence';
 $string['privacy:metadata'] = 'The MUAI plugin doesn\'t store any personal data.';
 $string['prompts'] = 'Page/editor prompts';
-$string['prompts_desc'] = 'One entry per line, using the format <code>page|editor_context|prompt</code>. <strong>page</strong> is the id of the page <code>&lt;body&gt;</code> tag (e.g. <code>page-course-editsection</code>). <strong>editor_context</strong> is the id of the textarea the editor is attached to (e.g. <code>id_summary_editor</code>). <strong>prompt</strong> is extra context that will be prepended to "Please critique the following text:" when that page and editor combination is matched. Lines starting with <code>#</code> are ignored.';
+$string['prompts_desc'] = 'One entry per line, using the format <code>page|editor_context|prompt</code>. <strong>page</strong> is the id of the page <code>&lt;body&gt;</code> tag (e.g. <code>page-course-editsection</code>). <strong>editor_context</strong> is the id of the textarea the editor is attached to (e.g. <code>id_summary_editor</code>). <strong>prompt</strong> is extra context that will be prepended to "Please review the following text:" when that page and editor combination is matched. Lines starting with <code>#</code> are ignored.';

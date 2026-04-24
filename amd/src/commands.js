@@ -71,7 +71,7 @@ const makeDraggable = (panel, handle) => {
 
 const buildPanel = async(editor) => {
     const [titleText, refreshText, closeText, checkRevisedText, checkRevisedTitleText] = await Promise.all([
-        getString('critiqueheading', component),
+        getString('reviewheading', component),
         getString('panelrefresh', component),
         getString('panelclose', component),
         getString('checkrevised', component),
@@ -105,12 +105,12 @@ const buildPanel = async(editor) => {
         hasContent: false,
         loading: false,
         originalContent: null,
-        lastCritique: null,
+        lastReview: null,
     };
 
     // Listen for editor content changes to enable/disable "Check revised".
     editor.on('input NodeChange', () => {
-        if (state.lastCritique === null || state.loading) {
+        if (state.lastReview === null || state.loading) {
             return;
         }
         const current = editor.getContent({format: 'text'}).trim();
@@ -174,7 +174,7 @@ const fetchIntoState = async(editor, state) => {
         state.body.textContent = response;
         state.hasContent = true;
         state.originalContent = editorContent;
-        state.lastCritique = response;
+        state.lastReview = response;
         if (state.checkRevisedBtn) {
             state.checkRevisedBtn.disabled = true;
         }
@@ -213,14 +213,14 @@ const fetchReviseIntoState = async(editor, state) => {
                 editorcontext: editor.id ?? '',
                 editorcontent: editorContent,
                 name: document.getElementById('id_name')?.value ?? '',
-                previousresponse: state.lastCritique ?? '',
+                previousresponse: state.lastReview ?? '',
             },
         }])[0];
 
         state.body.textContent = response;
         state.hasContent = true;
         state.originalContent = editorContent;
-        state.lastCritique = response;
+        state.lastReview = response;
     } catch (error) {
         state.body.textContent = '';
         state.hasContent = false;
@@ -234,7 +234,7 @@ const openPanel = async(editor) => {
     let state = panelStates.get(editor);
 
     if (!state) {
-        // First-time open: validate there is content to critique before building anything.
+        // First-time open: validate there is content to review before building anything.
         if (editor.getContent({format: 'text'}).trim() === '') {
             Notification.alert(
                 await getString('buttontitle', component),

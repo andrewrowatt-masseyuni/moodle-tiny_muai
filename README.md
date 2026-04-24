@@ -1,6 +1,6 @@
 # Massey University Artificial Intelligence (tiny_muai)
 
-A TinyMCE editor plugin for Moodle that provides AI-powered critique of text content. It adds a toolbar button to TinyMCE that sends the editor content to Moodle's core AI subsystem and displays the critique in a slide-out panel.
+A TinyMCE editor plugin for Moodle that provides AI-powered review of text content. It adds a toolbar button to TinyMCE that sends the editor content to Moodle's core AI subsystem and displays the review in a slide-out panel.
 
 ## Requirements
 
@@ -17,10 +17,10 @@ Then visit Site administration > Notifications to complete the installation.
 
 ## Features
 
-- **AI text critique** - one-click critique of editor content via the TinyMCE toolbar.
+- **AI text review** - one-click review of editor content via the TinyMCE toolbar.
 - **Context-aware prompts** - automatically includes course name, category, module type, section summary, and other contextual information in the AI prompt.
 - **Configurable per-page prompts** - administrators can define custom prompt context for specific page and editor combinations.
-- **Check revised** - after editing, re-check revised text against the original critique.
+- **Check revised** - after editing, re-check revised text against the original review.
 - **Debug mode** - site administrators can enable a debug view that shows the full prompt sent to the AI service.
 
 ## Configuration
@@ -29,7 +29,7 @@ Settings are found under Site administration > Plugins > Text editors > TinyMCE 
 
 ### Default prompt context
 
-Standard context prepended to every critique prompt, before any course, module, or page/editor-specific context.
+Standard context prepended to every review prompt, before any course, module, or page/editor-specific context.
 
 ### Page/editor prompts
 
@@ -39,7 +39,7 @@ One entry per line using the format:
 
 - **page** - the `id` attribute of the page `<body>` tag (e.g. `page-course-editsection`).
 - **editor_context** - the `id` of the textarea the editor is attached to (e.g. `id_summary_editor`).
-- **prompt** - extra context prepended to the critique prompt when the page and editor combination is matched.
+- **prompt** - extra context prepended to the review prompt when the page and editor combination is matched.
 
 Lines starting with `#` are treated as comments and ignored.
 
