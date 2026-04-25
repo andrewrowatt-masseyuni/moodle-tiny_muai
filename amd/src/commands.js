@@ -70,12 +70,24 @@ const makeDraggable = (panel, handle) => {
 };
 
 const buildPanel = async(editor) => {
-    const [titleText, refreshText, closeText, checkRevisedText, checkRevisedTitleText] = await Promise.all([
+    const [
+        titleText,
+        refreshText,
+        closeText,
+        checkRevisedText,
+        checkRevisedTitleText,
+        historyHeadingText,
+        historyShowText,
+        historyTitleText,
+    ] = await Promise.all([
         getString('reviewheading', component),
         getString('panelrefresh', component),
         getString('panelclose', component),
         getString('checkrevised', component),
         getString('checkrevisedtitle', component),
+        getString('historyheading', component),
+        getString('historyshow', component),
+        getString('historytitle', component),
     ]);
 
     const {html} = await Templates.renderForPromise('tiny_muai/panel', {
@@ -84,6 +96,9 @@ const buildPanel = async(editor) => {
         closetitle: closeText,
         checkrevised: checkRevisedText,
         checkrevisedtitle: checkRevisedTitleText,
+        historyheading: historyHeadingText,
+        historyshow: historyShowText,
+        historytitle: historyTitleText,
     });
 
     const wrapper = document.createElement('div');
@@ -95,6 +110,9 @@ const buildPanel = async(editor) => {
     const refreshBtn = panel.querySelector('[data-action="muai-refresh"]');
     const closeBtn = panel.querySelector('[data-action="muai-close"]');
     const checkRevisedBtn = panel.querySelector('[data-action="muai-checkrevised"]');
+    const historyContainer = panel.querySelector('[data-region="muai-history"]');
+    const historyItems = panel.querySelector('[data-region="muai-history-items"]');
+    const historyToggleBtn = panel.querySelector('[data-action="muai-history-toggle"]');
 
     makeDraggable(panel, handle);
 
@@ -102,6 +120,10 @@ const buildPanel = async(editor) => {
         panel,
         body,
         checkRevisedBtn,
+        historyContainer,
+        historyItems,
+        historyToggleBtn,
+        historyCount: 0,
         hasContent: false,
         loading: false,
         originalContent: null,
@@ -122,6 +144,7 @@ const buildPanel = async(editor) => {
     closeBtn.addEventListener('click', () => {
         panel.style.display = 'none';
     });
+    historyToggleBtn.addEventListener('click', () => toggleHistory(state));
 
     editor.once('remove', () => {
         panel.remove();
@@ -129,6 +152,54 @@ const buildPanel = async(editor) => {
     });
 
     return state;
+};
+
+const appendToHistory = async(state, responseHtml) => {
+    state.historyCount += 1;
+    const label = await getString('historyitemlabel', component, state.historyCount);
+
+    // The previously-latest item now becomes a "past" entry and should be revealed.
+    const previousLatest = state.historyItems.querySelector('.tiny-muai-panel-history-item.is-latest');
+    if (previousLatest) {
+        previousLatest.classList.remove('is-latest');
+    }
+
+    const item = document.createElement('div');
+    // .is-latest hides the entry via CSS — it duplicates what's already in the main body,
+    // so we only reveal it once a newer response has been added.
+    item.className = 'tiny-muai-panel-history-item is-latest';
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'tiny-muai-panel-history-item-label';
+    labelEl.textContent = label;
+
+    const contentEl = document.createElement('div');
+    contentEl.className = 'tiny-muai-panel-history-item-content';
+    contentEl.innerHTML = responseHtml;
+
+    item.appendChild(labelEl);
+    item.appendChild(contentEl);
+    state.historyItems.appendChild(item);
+};
+
+const toggleHistory = async(state) => {
+    if (state.historyToggleBtn.disabled) {
+        return;
+    }
+    const willShow = state.historyContainer.hasAttribute('hidden');
+    const [showText, hideText] = await Promise.all([
+        getString('historyshow', component),
+        getString('historyhide', component),
+    ]);
+    if (willShow) {
+        state.historyContainer.removeAttribute('hidden');
+        state.historyToggleBtn.setAttribute('aria-expanded', 'true');
+        state.historyToggleBtn.textContent = hideText;
+    } else {
+        state.historyContainer.setAttribute('hidden', '');
+        state.historyToggleBtn.setAttribute('aria-expanded', 'false');
+        state.historyToggleBtn.textContent = showText;
+    }
 };
 
 const setProcessing = async(state) => {
@@ -171,10 +242,11 @@ const fetchIntoState = async(editor, state) => {
             },
         }])[0];
 
-        state.body.textContent = response;
+        state.body.innerHTML = response;
         state.hasContent = true;
         state.originalContent = editorContent;
         state.lastReview = response;
+        await appendToHistory(state, response);
         if (state.checkRevisedBtn) {
             state.checkRevisedBtn.disabled = true;
         }
@@ -217,10 +289,15 @@ const fetchReviseIntoState = async(editor, state) => {
             },
         }])[0];
 
-        state.body.textContent = response;
+        state.body.innerHTML = response;
         state.hasContent = true;
         state.originalContent = editorContent;
         state.lastReview = response;
+        await appendToHistory(state, response);
+        // A "Check revised" response has now been received — enable the history toggle.
+        if (state.historyToggleBtn) {
+            state.historyToggleBtn.disabled = false;
+        }
     } catch (error) {
         state.body.textContent = '';
         state.hasContent = false;

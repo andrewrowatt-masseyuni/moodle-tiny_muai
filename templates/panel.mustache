@@ -28,6 +28,11 @@
     * title - localised panel title
     * refreshtitle - localised refresh button tooltip / aria-label
     * closetitle - localised close button tooltip / aria-label
+    * checkrevised - localised label for the "Check revised" button
+    * checkrevisedtitle - localised tooltip / aria-label for "Check revised"
+    * historyheading - localised heading shown above the history items
+    * historyshow - localised label for the (initially-disabled) show-history toggle
+    * historytitle - localised tooltip / aria-label for the show-history toggle
 }}
 <div class="tiny-muai-panel" role="dialog" aria-label="{{title}}" data-region="muai-panel">
     <div class="tiny-muai-panel-header" data-region="muai-drag-handle">
@@ -36,7 +41,12 @@
         <button type="button" class="tiny-muai-panel-btn" data-action="muai-close" title="{{closetitle}}" aria-label="{{closetitle}}">&#x00d7;</button>
     </div>
     <div class="tiny-muai-panel-body" data-region="muai-body"></div>
+    <div class="tiny-muai-panel-history" data-region="muai-history" hidden>
+        <div class="tiny-muai-panel-history-header">{{historyheading}}</div>
+        <div class="tiny-muai-panel-history-items" data-region="muai-history-items"></div>
+    </div>
     <div class="tiny-muai-panel-footer" data-region="muai-footer">
+        <button type="button" class="tiny-muai-panel-history-btn" data-action="muai-history-toggle" title="{{historytitle}}" aria-label="{{historytitle}}" aria-expanded="false" disabled>{{historyshow}}</button>
         <button type="button" class="tiny-muai-panel-checkrevised-btn" data-action="muai-checkrevised" title="{{checkrevisedtitle}}" aria-label="{{checkrevisedtitle}}" disabled>{{checkrevised}}</button>
     </div>
 </div>
