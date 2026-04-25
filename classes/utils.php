@@ -103,12 +103,16 @@ class utils {
         }
         $defaultprompt = trim((string) $defaultprompt);
 
+        if ($extraprompt !== '') {
+            $defaultprompt = strtr($defaultprompt, ['{editorcontextprompt}' => $extraprompt]);
+        }
+
         $prompttext = $OUTPUT->render_from_template('tiny_muai/prompt_context', [
             'defaultpromptcontext' => $defaultpromptcontext !== '' ? $defaultpromptcontext : null,
             'defaultprompt' => $defaultprompt,
             'course' => $coursedetails,
             'module' => $moduledetails,
-            'extraprompt' => $extraprompt,
+            'extraprompt' => '',
             'additional' => $additional,
             'editorcontent' => $editorcontent,
             'previousresponse' => $previousresponse !== '' ? $previousresponse : null,
