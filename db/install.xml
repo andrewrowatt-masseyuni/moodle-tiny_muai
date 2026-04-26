@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="lib/editor/tiny/plugins/muai/db" VERSION="20260426" COMMENT="XMLDB file for tiny_muai test cases"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="tiny_muai_testcase" COMMENT="Saved test cases for the tiny_muai test cases admin tool">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Human-readable name of the test case (globally unique)"/>
+        <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Moodle context id passed to generate_ai_response"/>
+        <FIELD NAME="page" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="HTML id of the page body tag"/>
+        <FIELD NAME="editorcontext" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="HTML id of the editor textarea"/>
+        <FIELD NAME="editorcontent" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Text content sent to the AI"/>
+        <FIELD NAME="nameparam" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Value of the HTML id_name field on the simulated page"/>
+        <FIELD NAME="previousresponse" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Previous AI response, used to simulate Check revised"/>
+        <FIELD NAME="defaultpromptcontext" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Override value for tiny_muai/defaultpromptcontext"/>
+        <FIELD NAME="defaultprompt" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Override value for tiny_muai/defaultprompt"/>
+        <FIELD NAME="prompts" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Override value for tiny_muai/prompts"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who last modified the test case"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="name" UNIQUE="true" FIELDS="name"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="tiny_muai_testcase_run" COMMENT="History of test case executions for tiny_muai">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="testcaseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who ran the test case"/>
+        <FIELD NAME="inputs" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="JSON snapshot of the inputs that were used for this run"/>
+        <FIELD NAME="systeminstruction" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="System instruction in effect on the AI provider when this run was dispatched"/>
+        <FIELD NAME="prompttext" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Full prompt text sent to the AI for this run"/>
+        <FIELD NAME="output" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Generated AI output text"/>
+        <FIELD NAME="success" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if the run completed successfully, 0 if it threw an exception"/>
+        <FIELD NAME="errormessage" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Exception message captured if the run failed"/>
+        <FIELD NAME="durationms" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Run duration in milliseconds"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="testcaseid" TYPE="foreign" FIELDS="testcaseid" REFTABLE="tiny_muai_testcase" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

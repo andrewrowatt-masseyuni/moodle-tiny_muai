@@ -15,18 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for Muai
+ * tiny_muai test case delete handler.
  *
  * @package    tiny_muai
  * @copyright  2026 Andrew Rowatt <A.J.Rowatt@massey.ac.nz>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../../../../../config.php');
+require_once($CFG->libdir . '/adminlib.php');
 
-$plugin->component    = 'tiny_muai';
-$plugin->release      = '1.0';
-$plugin->version      = 2026042601;
-$plugin->requires     = 2024100700;
-$plugin->supported    = [405, 405];
-$plugin->maturity     = MATURITY_STABLE;
+$id = required_param('id', PARAM_INT);
+
+require_login();
+require_sesskey();
+require_capability('tiny/muai:managetestcases', context_system::instance());
+
+$DB->delete_records('tiny_muai_testcase_run', ['testcaseid' => $id]);
+$DB->delete_records('tiny_muai_testcase', ['id' => $id]);
+
+redirect(
+    new moodle_url('/lib/editor/tiny/plugins/muai/testcases/index.php'),
+    get_string('testcasedeleted', 'tiny_muai'),
+    null,
+    \core\output\notification::NOTIFY_SUCCESS
+);

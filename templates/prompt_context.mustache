@@ -38,11 +38,6 @@ The course is called "{{{fullname}}}".
 {{#summary}}It has the course summary:
 {{{.}}}
 {{/summary}}
-{{#category}}The course is in the top-level category "{{{.}}}".
-{{#category_description}}The top-level category has the description:
-{{{.}}}
-{{/category_description}}
-{{/category}}
 {{/course}}
 {{#module}}
 
@@ -70,7 +65,7 @@ The text to review is for a Moodle "{{{type}}}" activity called "{{{name}}}".
 {{#section_content}}
 
 ## Section content
-The section that the module is in also contains the following labels and books:
+The section that the module is in also contains the following content:
 {{{.}}}
 {{/section_content}}
 {{/module}}
@@ -88,6 +83,6 @@ The user has revised the text based on your review. Please review the revised ve
 # Prompt
 {{{defaultprompt}}}
 
-Text to review:
+# Text to review
 {{{editorcontent}}}
 {{/previousresponse}}

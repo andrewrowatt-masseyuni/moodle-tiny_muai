@@ -1,0 +1,189 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+    },
+    "options": {
+        "env": {
+            "COMPOSE_PROJECT_NAME": "moodle405",
+            "MOODLE_DOCKER_WWWROOT": "/home/arowatt/moodle405",
+            "MOODLE_DOCKER_DB": "pgsql"
+        }
+    },
+    "tasks": [
+        {
+            "label": "PHP Lint",
+            "type": "shell",
+            "command": "../moodle-plugin-ci/bin/moodle-plugin-ci phplint ./lib/editor/tiny/plugins/muai",
+            "group": "test",
+            "options": {
+                "cwd": "/home/arowatt/moodle405"
+            }
+        },
+        {
+            "label": "PHP Mess Detector",
+            "type": "shell",
+            "command": "../moodle-plugin-ci/bin/moodle-plugin-ci phpmd ./lib/editor/tiny/plugins/muai",
+            "group": "test",
+            "options": {
+                "cwd": "/home/arowatt/moodle405"
+            }
+        },
+        {
+            "label": "moodle-plugin-ci mustache",
+            "type": "shell",
+            "command": "../moodle-plugin-ci/bin/moodle-plugin-ci mustache ./lib/editor/tiny/plugins/muai",
+            "group": "test",
+            "options": {
+                "cwd": "/home/arowatt/moodle405"
+            }
+        },
+        {
+            "label": "grunt moodle-ci - amd",
+            "type": "shell",
+            "command": "grunt --max-lint-warnings=0 amd && /home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php admin/cli/purge_caches.php",
+            "group": "test",
+            "options": {
+                "cwd": "/home/arowatt/moodle405/lib/editor/tiny/plugins/muai"
+            }
+        },
+        {
+            "label": "grunt moodle-ci - yui",
+            "type": "shell",
+            "command": "grunt --max-lint-warnings=0 yui",
+            "group": "test",
+            "options": {
+                "cwd": "/home/arowatt/moodle405/lib/editor/tiny/plugins/muai"
+            }
+        },
+        {
+            "label": "grunt moodle-ci - gherkinlint",
+            "type": "shell",
+            "command": "grunt --max-lint-warnings=0 gherkinlint",
+            "group": "test",
+            "options": {
+                "cwd": "/home/arowatt/moodle405/lib/editor/tiny/plugins/muai"
+            }
+        },
+        {
+            "label": "grunt moodle-ci - stylelint",
+            "type": "shell",
+            "command": "grunt --max-lint-warnings=0 stylelint",
+            "group": "test",
+            "options": {
+                "cwd": "/home/arowatt/moodle405/lib/editor/tiny/plugins/muai"
+            }
+        },
+        {
+            "label": "PHP Code check and auto-fix - phpcbf",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php local/codechecker/vendor/bin/phpcbf ./lib/editor/tiny/plugins/muai/",
+            "group": "test"
+        },
+        {
+            "label": "PHP Code checker - phpcs",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php local/codechecker/vendor/bin/phpcs ./lib/editor/tiny/plugins/muai/",
+            "group": "test"
+        },
+        {
+            "label": "PHPDoc checker",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php local/moodlecheck/cli/moodlecheck.php -p=lib/editor/tiny/plugins/muai -f=text | tee /dev/stderr | grep -vz error",
+            "group": "test"
+        },
+        {
+            "label": "Run phpunit",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver vendor/bin/phpunit lib/editor/tiny/plugins/muai/tests/. --test-suffix=_test.php",
+            "group": "test"
+        },
+        {
+            "label": "Run phpunit - privacy",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver vendor/bin/phpunit privacy/tests/privacy/provider_test.php",
+            "group": "test"
+        },
+        {
+            "label": "Run behat tests",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec -u www-data webserver php admin/tool/behat/cli/run.php --tags=@tiny_muai --format progress --format moodle_screenshot",
+            "group": "test"
+        },
+        {
+            "label": "Run all tests (tiny_muai)",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "PHP Lint",
+                "PHP Mess Detector",
+                "PHP Code check and auto-fix - phpcbf",
+                "PHP Code checker - phpcs",
+                "PHPDoc checker",
+                "grunt moodle-ci - amd",
+                "grunt moodle-ci - yui",
+                "grunt moodle-ci - gherkinlint",
+                "grunt moodle-ci - stylelint",
+                "moodle-plugin-ci mustache",
+                "Run phpunit",
+                "Run behat tests",
+                "Run phpunit - privacy"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "phpunit-init",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php admin/tool/phpunit/cli/init.php",
+            "group": "build"
+        },
+        {
+            "label": "behat-init",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php admin/tool/behat/cli/init.php",
+            "group": "build"
+        },
+        {
+            "label": "Init all tests",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "phpunit-init",
+                "behat-init"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Uninstall plugin",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php admin/cli/uninstall_plugins.php --plugins=tiny_muai --run",
+            "group": "build"
+        },
+        {
+            "label": "Install plugin (via Moodle upgrade)",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php admin/cli/upgrade.php --non-interactive --verbose-settings",
+            "group": "build"
+        },
+        {
+            "label": "Purge cache",
+            "type": "shell",
+            "command": "/home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php admin/cli/purge_caches.php",
+            "group": "build"
+        },
+        {
+            "label": "grunt & Purge cache",
+            "type": "shell",
+            "command": "grunt amd && /home/arowatt/moodle-docker/bin/moodle-docker-compose exec webserver php admin/cli/purge_caches.php",
+            "group": "none",
+            "presentation": {
+                "panel": "dedicated",
+            },
+            "options": {
+                "cwd": "/home/arowatt/moodle405/lib/editor/tiny/plugins/muai"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

@@ -30,12 +30,23 @@ class utils {
      *
      * Throws moodle_exception if the AI service fails to produce a response.
      *
+     * The three override parameters allow the test cases admin tool to swap in
+     * dynamic values for the site-wide tiny_muai/defaultpromptcontext,
+     * tiny_muai/defaultprompt, and tiny_muai/prompts settings without writing
+     * them to system config. When an override is null the corresponding
+     * get_config() value is used (preserving the live editor's behaviour); when
+     * non-null the override value is used verbatim, including the empty string.
+     *
      * @param int $contextid The Moodle context id of the editor instance.
      * @param string $page The HTML id of the page body tag.
      * @param string $editorcontext The HTML id of the textarea associated with the editor.
      * @param string $editorcontent The text content of the editor.
      * @param string $name The value of the HTML field with id "id_name" on the page.
-     * @return string
+     * @param string $previousresponse The previous AI response (for "check revised").
+     * @param string|null $defaultpromptcontextoverride Override for tiny_muai/defaultpromptcontext.
+     * @param string|null $defaultpromptoverride Override for tiny_muai/defaultprompt.
+     * @param string|null $promptsoverride Override for tiny_muai/prompts (raw multi-line text).
+     * @return array{systeminstruction: string, prompttext: string, output: string}
      */
     public static function generate_ai_response(
         int $contextid,
@@ -44,11 +55,18 @@ class utils {
         string $editorcontent,
         string $name,
         string $previousresponse = '',
-    ): string {
+        ?string $defaultpromptcontextoverride = null,
+        ?string $defaultpromptoverride = null,
+        ?string $promptsoverride = null,
+    ): array {
         global $USER, $OUTPUT;
 
+        $configuredprompts = $promptsoverride !== null
+            ? self::parse_prompts_string($promptsoverride)
+            : self::get_configured_prompts();
+
         $extraprompt = '';
-        foreach (self::get_configured_prompts() as $row) {
+        foreach ($configuredprompts as $row) {
             if ($row['page'] === $page && $row['editorcontext'] === $editorcontext) {
                 $extraprompt = $row['prompt'];
                 break;
@@ -92,19 +110,26 @@ class utils {
 
         $additional = self::get_additional_context($contextid, $page, $editorcontext);
 
-        $defaultpromptcontext = trim((string) get_config('tiny_muai', 'defaultpromptcontext'));
-        $defaultprompt = get_config('tiny_muai', 'defaultprompt');
-        if ($defaultprompt === false || trim((string) $defaultprompt) === '') {
-            $defaultprompt = "Please review the following text and provide feedback to:\n"
-                . "1. Correct any grammatical errors and typos.\n"
-                . "2. Improve word choice and sentence structure to make the text more concise "
-                . "and easy to read for university-level students.\n"
-                . "3. Highlight any ambiguity in relation to the surrounding context provided above.";
+        $defaultpromptcontext = $defaultpromptcontextoverride !== null
+            ? trim($defaultpromptcontextoverride)
+            : trim((string) get_config('tiny_muai', 'defaultpromptcontext'));
+
+        if ($defaultpromptoverride !== null) {
+            $defaultprompt = $defaultpromptoverride;
+        } else {
+            $defaultprompt = get_config('tiny_muai', 'defaultprompt');
+            if ($defaultprompt === false || trim((string) $defaultprompt) === '') {
+                $defaultprompt = "Please review the following text and provide feedback to:\n"
+                    . "1. Correct any grammatical errors and typos.\n"
+                    . "2. Improve word choice and sentence structure to make the text more concise "
+                    . "and easy to read for university-level students.\n"
+                    . "3. Highlight any ambiguity in relation to the surrounding context provided above.";
+            }
         }
         $defaultprompt = trim((string) $defaultprompt);
 
         if ($extraprompt !== '') {
-            $defaultprompt = strtr($defaultprompt, ['{editorcontextprompt}' => $extraprompt]);
+            $defaultprompt = strtr($defaultprompt, ['{editorcontextprompt}' => "- $extraprompt"]);
         }
 
         $prompttext = $OUTPUT->render_from_template('tiny_muai/prompt_context', [
@@ -124,6 +149,16 @@ class utils {
             prompttext: $prompttext,
         );
 
+        // Resolve the system instruction from the first enabled provider for this action. The manager
+        // iterates providers in order and returns the first successful result, so this matches what
+        // the run will use unless that provider fails and falls back to another.
+        $systeminstruction = '';
+        $providers = \core_ai\manager::get_providers_for_actions([\core_ai\aiactions\generate_text::class], true);
+        if (!empty($providers[\core_ai\aiactions\generate_text::class])) {
+            $provider = reset($providers[\core_ai\aiactions\generate_text::class]);
+            $systeminstruction = (string) get_config($provider->get_name(), 'action_generate_text_systeminstruction');
+        }
+
         $manager = \core\di::get(\core_ai\manager::class);
         $response = $manager->process_action($action);
 
@@ -135,21 +170,81 @@ class utils {
             throw new \moodle_exception('cannotgenerate', 'tiny_muai', '', null, $message);
         }
 
-        $generated = $response->get_response_data()['generatedcontent'] ?? '';
+        return [
+            'systeminstruction' => $systeminstruction,
+            'prompttext' => $prompttext,
+            'output' => $response->get_response_data()['generatedcontent'] ?? '',
+        ];
+    }
 
-        if (get_config('tiny_muai', 'debugging') && is_siteadmin($USER)) {
-            $debug = "contextid: {$contextid}\n"
-                . "page: {$page}\n"
-                . "editorcontext: {$editorcontext}\n"
-                . "name: {$name}\n\n"
-                . "prompttext:\n{$prompttext}\n";
-/*             foreach ($tokens as $token => $value) {
-                $debug .= "{$token}: {$value}\n";
-            } */
-            $generated = $debug . "\nResponse:\n" . $generated;
+    /**
+     * Run a saved test case and persist a row in tiny_muai_testcase_run.
+     *
+     * Loads the test case, calls generate_ai_response with the test case's
+     * field values plus its overrides, and records the inputs / output /
+     * success state / duration in the run history.
+     *
+     * @param int $testcaseid The id of the saved test case.
+     * @return int The id of the newly inserted tiny_muai_testcase_run row.
+     */
+    public static function run_test_case(int $testcaseid): int {
+        global $DB, $USER;
+
+        $testcase = $DB->get_record('tiny_muai_testcase', ['id' => $testcaseid], '*', MUST_EXIST);
+
+        $inputs = [
+            'name' => $testcase->name,
+            'contextid' => (int) $testcase->contextid,
+            'page' => $testcase->page,
+            'editorcontext' => $testcase->editorcontext,
+            'editorcontent' => $testcase->editorcontent,
+            'nameparam' => (string) $testcase->nameparam,
+            'previousresponse' => (string) $testcase->previousresponse,
+            'defaultpromptcontext' => (string) $testcase->defaultpromptcontext,
+            'defaultprompt' => (string) $testcase->defaultprompt,
+            'prompts' => (string) $testcase->prompts,
+        ];
+
+        $start = microtime(true);
+        $systeminstruction = '';
+        $prompttext = '';
+        $output = '';
+        $success = 0;
+        $errormessage = '';
+        try {
+            $result = self::generate_ai_response(
+                contextid: (int) $testcase->contextid,
+                page: $testcase->page,
+                editorcontext: $testcase->editorcontext,
+                editorcontent: $testcase->editorcontent,
+                name: (string) $testcase->nameparam,
+                previousresponse: (string) $testcase->previousresponse,
+                defaultpromptcontextoverride: (string) $testcase->defaultpromptcontext,
+                defaultpromptoverride: (string) $testcase->defaultprompt,
+                promptsoverride: (string) $testcase->prompts,
+            );
+            $systeminstruction = $result['systeminstruction'];
+            $prompttext = $result['prompttext'];
+            $output = $result['output'];
+            $success = 1;
+        } catch (\Throwable $e) {
+            $errormessage = $e->getMessage();
         }
+        $durationms = (int) round((microtime(true) - $start) * 1000);
 
-        return $generated;
+        $run = (object) [
+            'testcaseid' => $testcase->id,
+            'userid' => $USER->id,
+            'inputs' => json_encode($inputs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            'systeminstruction' => $systeminstruction,
+            'prompttext' => $prompttext,
+            'output' => $output,
+            'success' => $success,
+            'errormessage' => $errormessage,
+            'durationms' => $durationms,
+            'timecreated' => time(),
+        ];
+        return $DB->insert_record('tiny_muai_testcase_run', $run);
     }
 
     /**
@@ -226,10 +321,19 @@ class utils {
         if ($section) {
             $sectionname = get_section_name($course, $section);
             if (!empty($section->summary)) {
-                $sectionsummary = trim(format_text(
+                $coursecontext = \core\context\course::instance($course->id);
+                $summary = file_rewrite_pluginfile_urls(
                     $section->summary,
+                    'pluginfile.php',
+                    $coursecontext->id,
+                    'course',
+                    'section',
+                    $section->id
+                );
+                $sectionsummary = trim(format_text(
+                    $summary,
                     $section->summaryformat,
-                    ['context' => \core\context\course::instance($course->id), 'noclean' => true]
+                    ['context' => $coursecontext, 'noclean' => true]
                 ));
             }
             $sectioncontent = self::get_section_content($course->id, $section->id);
@@ -285,7 +389,15 @@ class utils {
                 if (!$label || trim((string) $label->intro) === '') {
                     continue;
                 }
-                $html = format_text($label->intro, $label->introformat, [
+                $intro = file_rewrite_pluginfile_urls(
+                    $label->intro,
+                    'pluginfile.php',
+                    $cm->context->id,
+                    'mod_label',
+                    'intro',
+                    null
+                );
+                $html = format_text($intro, $label->introformat, [
                     'context' => $cm->context,
                     'noclean' => true,
                 ]);
@@ -307,7 +419,15 @@ class utils {
                 foreach ($chapters as $chapter) {
                     $prefix = !empty($chapter->subchapter) ? '#####' : '####';
                     $parts[] = $prefix . ' ' . format_string($chapter->title);
-                    $html = format_text($chapter->content, $chapter->contentformat, [
+                    $chaptercontent = file_rewrite_pluginfile_urls(
+                        $chapter->content,
+                        'pluginfile.php',
+                        $cm->context->id,
+                        'mod_book',
+                        'chapter',
+                        $chapter->id
+                    );
+                    $html = format_text($chaptercontent, $chapter->contentformat, [
                         'context' => $cm->context,
                         'noclean' => true,
                     ]);
@@ -324,24 +444,35 @@ class utils {
     }
 
     /**
-     * Parse the admin "prompts" setting into a list of rows.
-     *
-     * Each non-blank line in the setting is expected to use the form:
-     *   page|editor_context|prompt
-     * where "page" matches the id of the body tag, "editor_context" matches
-     * the id of the textarea replaced by TinyMCE, and "prompt" is the extra
-     * context to prepend to the review prompt.
+     * Read the admin "prompts" setting and parse it into a list of rows.
      *
      * @return array<int, array{page: string, editorcontext: string, prompt: string}>
      */
     public static function get_configured_prompts(): array {
-        $raw = get_config('tiny_muai', 'prompts');
-        if ($raw === false || trim((string) $raw) === '') {
+        return self::parse_prompts_string((string) get_config('tiny_muai', 'prompts'));
+    }
+
+    /**
+     * Parse a raw prompts string (the same format as the tiny_muai/prompts
+     * admin setting) into a list of rows.
+     *
+     * Each non-blank line is expected to use the form:
+     *   page|editor_context|prompt
+     * where "page" matches the id of the body tag, "editor_context" matches
+     * the id of the textarea replaced by TinyMCE, and "prompt" is the extra
+     * context to prepend to the review prompt. Lines starting with "#" are
+     * ignored.
+     *
+     * @param string $raw
+     * @return array<int, array{page: string, editorcontext: string, prompt: string}>
+     */
+    public static function parse_prompts_string(string $raw): array {
+        if (trim($raw) === '') {
             return [];
         }
 
         $rows = [];
-        foreach (preg_split('/\R/', (string) $raw) as $line) {
+        foreach (preg_split('/\R/', $raw) as $line) {
             $line = trim($line);
             if ($line === '' || str_starts_with($line, '#')) {
                 continue;

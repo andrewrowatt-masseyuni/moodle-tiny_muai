@@ -15,18 +15,35 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for Muai
+ * tiny_muai test cases list page.
  *
  * @package    tiny_muai
  * @copyright  2026 Andrew Rowatt <A.J.Rowatt@massey.ac.nz>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../../../../../config.php');
+require_once($CFG->libdir . '/adminlib.php');
 
-$plugin->component    = 'tiny_muai';
-$plugin->release      = '1.0';
-$plugin->version      = 2026042601;
-$plugin->requires     = 2024100700;
-$plugin->supported    = [405, 405];
-$plugin->maturity     = MATURITY_STABLE;
+use core_reportbuilder\system_report_factory;
+use tiny_muai\reportbuilder\local\systemreports\testcases;
+
+admin_externalpage_setup('tinymuaitestcases');
+require_capability('tiny/muai:managetestcases', context_system::instance());
+
+$strheading = get_string('testcasesheading', 'tiny_muai');
+$PAGE->set_title($strheading);
+$PAGE->set_heading($strheading);
+
+echo $OUTPUT->header();
+
+echo $OUTPUT->single_button(
+    new moodle_url('/lib/editor/tiny/plugins/muai/testcases/edit.php'),
+    get_string('newtestcase', 'tiny_muai'),
+    'get'
+);
+
+$report = system_report_factory::create(testcases::class, context_system::instance());
+echo $report->output();
+
+echo $OUTPUT->footer();

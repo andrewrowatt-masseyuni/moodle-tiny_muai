@@ -39,10 +39,7 @@ if ($ADMIN->fulltree) {
         'tiny_muai/defaultprompt',
         new lang_string('defaultprompt', 'tiny_muai'),
         new lang_string('defaultprompt_desc', 'tiny_muai'),
-        "Please review the following text and provide feedback to:\n"
-            . "1. Correct any grammatical errors and typos.\n"
-            . "2. Improve word choice and sentence structure to make the text more concise and easy to read for university-level students.\n"
-            . "3. Highlight any ambiguity in relation to the surrounding context provided above.",
+        '',
         PARAM_RAW,
         60,
         10,
@@ -57,11 +54,11 @@ if ($ADMIN->fulltree) {
         60,
         10,
     ));
-
-    $settings->add(new admin_setting_configcheckbox(
-        'tiny_muai/debugging',
-        new lang_string('debugging', 'tiny_muai'),
-        new lang_string('debugging_desc', 'tiny_muai'),
-        0,
-    ));
 }
+
+$ADMIN->add('editortiny', new admin_externalpage(
+    'tinymuaitestcases',
+    new lang_string('testcases', 'tiny_muai'),
+    new moodle_url('/lib/editor/tiny/plugins/muai/testcases/index.php'),
+    'tiny/muai:managetestcases',
+));
