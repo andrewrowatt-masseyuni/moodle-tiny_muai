@@ -28,8 +28,20 @@ require_once($CFG->libdir . '/adminlib.php');
 use core_reportbuilder\system_report_factory;
 use tiny_muai\reportbuilder\local\systemreports\testcases;
 
+require_login();
+
+if (!has_capability('tiny/muai:managetestcases', context_system::instance())) {
+    $PAGE->set_context(context_system::instance());
+    $PAGE->set_url(new moodle_url('/lib/editor/tiny/plugins/muai/testcases/index.php'));
+    $PAGE->set_title(get_string('accessdenied', 'admin'));
+    $PAGE->set_heading(get_string('accessdenied', 'admin'));
+    echo $OUTPUT->header();
+    echo $OUTPUT->notification(get_string('accessdenied', 'admin'), \core\output\notification::NOTIFY_ERROR);
+    echo $OUTPUT->footer();
+    exit;
+}
+
 admin_externalpage_setup('tinymuaitestcases');
-require_capability('tiny/muai:managetestcases', context_system::instance());
 
 $strheading = get_string('testcasesheading', 'tiny_muai');
 $PAGE->set_title($strheading);
