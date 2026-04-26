@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for Muai
+ * Capabilities for tiny_muai.
  *
  * @package    tiny_muai
  * @copyright  2026 Andrew Rowatt <A.J.Rowatt@massey.ac.nz>
@@ -24,9 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component    = 'tiny_muai';
-$plugin->release      = '1.0';
-$plugin->version      = 2026042601;
-$plugin->requires     = 2024100700;
-$plugin->supported    = [405, 405];
-$plugin->maturity     = MATURITY_STABLE;
+$capabilities = [
+    'tiny/muai:managetestcases' => [
+        'riskbitmask' => RISK_CONFIG | RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/site:config',
+    ],
+];

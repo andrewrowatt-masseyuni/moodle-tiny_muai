@@ -78,6 +78,8 @@ class get_ai_response extends external_api {
      * @param string $page
      * @param string $editorcontext
      * @param string $editorcontent
+     * @param string $name
+     * @param string $previousresponse
      * @return string The generated text.
      */
     public static function execute(
@@ -107,17 +109,19 @@ class get_ai_response extends external_api {
         $context = \core\context::instance_by_id($contextid);
         self::validate_context($context);
 
-        if (!\aiplacement_editor\utils::is_html_editor_placement_action_available(
-            $context,
-            'generate_text',
-            \core_ai\aiactions\generate_text::class,
-        )) {
+        if (
+            !\aiplacement_editor\utils::is_html_editor_placement_action_available(
+                $context,
+                'generate_text',
+                \core_ai\aiactions\generate_text::class,
+            )
+        ) {
             throw new \moodle_exception('noeditor', 'aiplacement_editor');
         }
 
-        $response = utils::generate_ai_response($contextid, $page, $editorcontext, $editorcontent, $name, $previousresponse);
+        $result = utils::generate_ai_response($contextid, $page, $editorcontext, $editorcontent, $name, $previousresponse);
 
-        return format_text($response, FORMAT_MARKDOWN, ['context' => $context, 'noclean' => false]);
+        return format_text($result['output'], FORMAT_MARKDOWN, ['context' => $context, 'noclean' => false]);
     }
 
     /**

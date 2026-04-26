@@ -72,6 +72,10 @@
         font-size: 1rem;
         font-weight: 400;
     }
+
+    hr {
+        margin: 1em 0;
+    }
 }
 
 .tiny-muai-panel-spinner {
@@ -194,4 +198,10 @@
 .tiny-muai-panel-checkrevised-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+#page-admin-lib-editor-tiny-plugins-muai-testcases-index {
+    pre {
+        white-space: pre-wrap;
+    }
 }
