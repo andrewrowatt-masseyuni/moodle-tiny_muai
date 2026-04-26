@@ -6,6 +6,7 @@ Feature: Manage tiny_muai test cases
 
   Background:
     Given I log in as "admin"
+    And I change window size to "large"
 
   Scenario: A user without the capability cannot access the test cases page
     Given the following "users" exist:
@@ -79,6 +80,6 @@ Feature: Manage tiny_muai test cases
       | Editor context  | id_summary_editor          |
       | Editor content  | trash content              |
     And I press "Save changes"
-    When I click on "Delete" "link" in the "Disposable" "table_row"
-    And I click on "Delete" "button" in the "Confirmation" "dialogue"
+    When I press "Delete" action in the "Disposable" report row
+    And I click on "Delete" "button" in the "Delete test case" "dialogue"
     Then I should not see "Disposable"
