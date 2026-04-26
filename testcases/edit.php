@@ -140,10 +140,10 @@ if ($id && $runid) {
             }
             echo $OUTPUT->heading(get_string('runoutput', 'tiny_muai'), 4);
             echo html_writer::tag(
-                    'pre',
-                    s((string) $run->output),
-                    ['class' => 'card card-body bg-light']
-                );
+                'pre',
+                s((string) $run->output),
+                ['class' => 'card card-body bg-light']
+            );
         } else {
             echo $OUTPUT->notification(
                 get_string('lastrunfailed', 'tiny_muai') . ': ' . s((string) $run->errormessage),

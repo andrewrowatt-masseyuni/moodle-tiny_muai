@@ -26,6 +26,35 @@
     * defaultprompt - string the default review prompt text
     * course - object|null with fullname, shortname, summary, category, category_description
     * module - object|null with type, name, section, section_summary, section_content, restrictions
+    * additional - string|null additional context text appended after module details
+    * extraprompt - string|null page/editor-specific extra prompt refinements
+    * editorcontent - string the text from the editor that the AI is being asked to review
+    * previousresponse - string|null the AI's previous response, populated for "Check revised"
+
+    Example context (json):
+    {
+        "defaultpromptcontext": "You are a friendly editor.",
+        "defaultprompt": "Please review the following text and provide feedback.",
+        "course": {
+            "fullname": "Sample course",
+            "shortname": "SC101",
+            "summary": "An example course summary.",
+            "category": "Miscellaneous",
+            "category_description": ""
+        },
+        "module": {
+            "type": "assign",
+            "name": "Essay 1",
+            "section": "Week 1",
+            "section_summary": "Introductory week.",
+            "section_content": "",
+            "restrictions": ""
+        },
+        "additional": null,
+        "extraprompt": null,
+        "editorcontent": "The text the student typed into the editor.",
+        "previousresponse": null
+    }
 }}
 {{#defaultpromptcontext}}
 # Top-level context

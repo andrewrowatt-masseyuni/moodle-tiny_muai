@@ -69,7 +69,7 @@ Feature: Manage tiny_muai test cases
     And I follow "Editable"
     Then the field "Editor content" matches value "updated body"
 
-    Scenario: Deleting a test case from the list removes the row
+  Scenario: Deleting a test case from the list removes the row
     Given I navigate to "Plugins > Text editors > TinyMCE editor > Test cases" in site administration
     And I press "New test case"
     And I set the following fields to these values:

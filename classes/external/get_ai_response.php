@@ -78,6 +78,8 @@ class get_ai_response extends external_api {
      * @param string $page
      * @param string $editorcontext
      * @param string $editorcontent
+     * @param string $name
+     * @param string $previousresponse
      * @return string The generated text.
      */
     public static function execute(
