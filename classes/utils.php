@@ -197,6 +197,7 @@ class utils {
             'contextid' => (int) $testcase->contextid,
             'page' => $testcase->page,
             'editorcontext' => $testcase->editorcontext,
+            'editorcontextprompt' => (string) $testcase->editorcontextprompt,
             'editorcontent' => $testcase->editorcontent,
             'nameparam' => (string) $testcase->nameparam,
             'previousresponse' => (string) $testcase->previousresponse,
