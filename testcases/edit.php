@@ -51,10 +51,29 @@ if ($id) {
 $PAGE->set_title($heading);
 $PAGE->set_heading($heading);
 
-$form = new testcase_form($pageurl->out(false));
+$form = new testcase_form($pageurl->out(false), [
+    'prompts' => $existing->prompts ?? '',
+]);
 
 if ($existing) {
-    $form->set_data((array) $existing);
+    $courseid = 0;
+    $context = \core\context::instance_by_id((int) $existing->contextid, IGNORE_MISSING);
+    if ($context instanceof \core\context\module) {
+        try {
+            [$cmcourse] = get_course_and_cm_from_cmid((int) $context->instanceid);
+            $courseid = (int) $cmcourse->id;
+        } catch (\moodle_exception $e) {
+            $courseid = 0;
+        }
+    } else if ($context instanceof \core\context\course) {
+        $courseid = (int) $context->instanceid;
+    }
+
+    $formdata = (array) $existing;
+    $formdata['courseid'] = $courseid;
+    $formdata['cmcontextid'] = (int) $existing->contextid;
+    $formdata['promptkey'] = $existing->page . '|' . $existing->editorcontext;
+    $form->set_data($formdata);
 } else {
     $form->set_data([
         'id' => 0,
@@ -70,12 +89,21 @@ if ($form->is_cancelled()) {
 
 if ($data = $form->get_data()) {
     $now = time();
+
+    $promptkey = (string) ($data->promptkey ?? '');
+    $page = '';
+    $editorcontext = '';
+    if ($promptkey !== '' && strpos($promptkey, '|') !== false) {
+        [$page, $editorcontext] = explode('|', $promptkey, 2);
+    }
+
     $record = (object) [
         'name' => trim($data->name),
-        'contextid' => (int) $data->contextid,
-        'page' => trim((string) $data->page),
-        'editorcontext' => trim((string) $data->editorcontext),
+        'contextid' => (int) $data->cmcontextid,
+        'page' => trim($page),
+        'editorcontext' => trim($editorcontext),
         'editorcontent' => (string) $data->editorcontent,
+        'editorcontextprompt' => (string) ($data->editorcontextprompt ?? ''),
         'nameparam' => trim((string) ($data->nameparam ?? '')),
         'previousresponse' => (string) ($data->previousresponse ?? ''),
         'defaultpromptcontext' => (string) ($data->defaultpromptcontext ?? ''),

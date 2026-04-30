@@ -31,4 +31,10 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
+    'tiny_muai_get_course_modules' => [
+        'classname'   => \tiny_muai\external\get_course_modules::class,
+        'description' => 'Return sections and activities (with context ids) for a course, for the testcase form picker.',
+        'type'        => 'read',
+        'ajax'        => true,
+    ],
 ];

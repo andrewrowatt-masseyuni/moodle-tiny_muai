@@ -116,6 +116,16 @@ class testcase extends base {
             ->set_is_sortable(true);
 
         $columns[] = (new column(
+            'editorcontextprompt',
+            new lang_string('editorcontextpromptlabel', 'tiny_muai'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_LONGTEXT)
+            ->add_field("{$tablealias}.editorcontextprompt")
+            ->set_is_sortable(false);
+
+        $columns[] = (new column(
             'timemodified',
             new lang_string('timemodified', 'core_reportbuilder'),
             $this->get_entity_name()
